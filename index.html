@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0F6E56">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="CertPEB">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>CertPEB — Fiche de visite</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=DM+Mono:wght@400&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --g:#0F6E56;--gl:#E1F5EE;--gm:#1D9E75;--gb:#9FE1CB;
+  --bl:#E6F1FB;--bm:#185FA5;
+  --al:#FAEEDA;--am:#BA7517;--ab:#FAC775;
+  --rl:#FCEBEB;--rm:#A32D2D;--rb:#F09595;
+  --bg:#ffffff;--bg2:#f7f8f6;--bg3:#f0f1ef;
+  --txt:#1a1a18;--txt2:#5a5a55;--txt3:#9a9a94;
+  --brd:rgba(0,0,0,0.1);--brd2:rgba(0,0,0,0.18);
+  --rad:10px;--rad-lg:14px;
+  --font:'DM Sans',system-ui,sans-serif;
+  --mono:'DM Mono',monospace;
+}
+html,body{height:100%;background:var(--bg2);font-family:var(--font);color:var(--txt);font-size:15px;line-height:1.5}
+/* LAYOUT */
+.app{max-width:480px;margin:0 auto;min-height:100vh;background:var(--bg);display:flex;flex-direction:column}
+.topbar{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--brd);padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:9px}
+.logo-icon{width:32px;height:32px;background:var(--g);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-icon svg{width:18px;height:18px;fill:white}
+.logo-text{font-size:15px;font-weight:500;color:var(--txt)}
+.logo-sub{font-size:11px;color:var(--txt3)}
+.lot-badge{font-size:11px;padding:3px 10px;border-radius:20px;background:var(--gl);color:var(--g);border:1px solid var(--gb);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* PROGRESS */
+.progress-wrap{background:var(--bg3);height:3px}
+.progress-fill{height:100%;background:var(--gm);transition:width .4s ease}
+/* STEPS NAV */
+.steps{display:flex;background:var(--bg);border-bottom:1px solid var(--brd);overflow-x:auto;scrollbar-width:none}
+.steps::-webkit-scrollbar{display:none}
+.step{flex:1;min-width:72px;padding:10px 4px;text-align:center;font-size:11px;cursor:pointer;border-bottom:2px solid transparent;color:var(--txt3);white-space:nowrap;transition:all .2s;user-select:none}
+.step.active{color:var(--g);border-bottom-color:var(--g);font-weight:500}
+.step.done{color:var(--gm)}
+.step-num{display:block;font-size:14px;font-weight:500;line-height:1.2}
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding:16px;-webkit-overflow-scrolling:touch}
+.section{display:none}
+.section.active{display:block}
+/* CARDS */
+.card{background:var(--bg);border:1px solid var(--brd);border-radius:var(--rad-lg);padding:14px 16px;margin-bottom:12px}
+.card-title{font-size:11px;font-weight:500;color:var(--txt3);margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em}
+.card.urgent{border-color:var(--gb);background:linear-gradient(135deg,var(--gl) 0%,var(--bg) 60%)}
+.card.urgent .card-title{color:var(--g)}
+/* FIELDS */
+.field{margin-bottom:12px}
+.field:last-child{margin-bottom:0}
+.field label{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--txt2);margin-bottom:5px;font-weight:500}
+.field input,.field select,.field textarea{
+  width:100%;font-family:var(--font);font-size:15px;
+  border:1px solid var(--brd2);border-radius:var(--rad);
+  padding:10px 12px;background:var(--bg);color:var(--txt);
+  -webkit-appearance:none;appearance:none;
+  transition:border-color .15s
+}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--gm);box-shadow:0 0 0 3px rgba(29,158,117,.12)}
+.field textarea{resize:vertical;min-height:80px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+/* DATE AUTO */
+.date-lock{background:var(--bg3);color:var(--txt2);cursor:default;font-family:var(--mono);font-size:14px}
+.auto-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:20px;background:var(--gl);color:var(--g);border:1px solid var(--gb);font-weight:400}
+/* GEO */
+.geo-wrap{display:flex;gap:8px;align-items:stretch}
+.geo-wrap input{flex:1}
+.geo-btn{flex-shrink:0;padding:10px 12px;border-radius:var(--rad);border:1px solid var(--brd2);background:var(--bg3);cursor:pointer;display:flex;align-items:center;gap:5px;font-size:12px;color:var(--txt2);transition:all .2s;white-space:nowrap;font-family:var(--font)}
+.geo-btn:active{transform:scale(.97)}
+.geo-btn.loading{border-color:var(--ab);color:var(--am);background:var(--al)}
+.geo-btn.success{border-color:var(--gb);color:var(--g);background:var(--gl)}
+.geo-btn.error{border-color:var(--rb);color:var(--rm);background:var(--rl)}
+.geo-btn svg{width:14px;height:14px;flex-shrink:0}
+.geo-status{font-size:12px;margin-top:6px;padding:6px 10px;border-radius:8px;display:none;line-height:1.4}
+.geo-status.show{display:block}
+.geo-status.ok{background:var(--gl);color:var(--g)}
+.geo-status.warn{background:var(--al);color:var(--am)}
+.geo-status.err{background:var(--rl);color:var(--rm)}
+/* RADIO PILLS */
+.radio-group{display:flex;gap:7px;flex-wrap:wrap}
+.radio-btn{padding:7px 14px;border-radius:20px;font-size:13px;cursor:pointer;border:1px solid var(--brd2);background:var(--bg3);color:var(--txt2);transition:all .15s;user-select:none}
+.radio-btn:active{transform:scale(.96)}
+.radio-btn.sel{background:var(--g);border-color:var(--g);color:white;font-weight:500}
+/* PHOTOS */
+.ph-section{margin-bottom:14px}
+.ph-section:last-child{margin-bottom:0}
+.ph-label-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.ph-label-txt{font-size:13px;font-weight:500;color:var(--txt)}
+.ph-label-txt .req-star{color:var(--rm);margin-left:2px}
+.ph-count{font-size:11px;color:var(--txt3)}
+.ph-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ph-slot{aspect-ratio:1;border-radius:var(--rad);border:1.5px dashed var(--brd2);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;background:var(--bg3);overflow:hidden;transition:border-color .15s}
+.ph-slot:active{transform:scale(.97)}
+.ph-slot.required-empty{border-color:var(--rb);background:var(--rl)}
+.ph-slot img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.ph-slot .ph-ico{width:28px;height:28px;color:var(--txt3)}
+.ph-slot .ph-txt{font-size:10px;color:var(--txt3);text-align:center;padding:2px 6px;margin-top:4px}
+.ph-slot.required-empty .ph-ico{color:var(--rm)}
+.ph-slot.required-empty .ph-txt{color:var(--rm)}
+.ph-del{position:absolute;top:4px;right:4px;width:22px;height:22px;background:rgba(0,0,0,.55);border-radius:50%;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:2;color:white;font-size:13px;line-height:1}
+.ph-slot.has-img .ph-del{display:flex}
+.ph-slot.has-img .ph-ico,.ph-slot.has-img .ph-txt{display:none}
+.ph-add{aspect-ratio:1;border-radius:var(--rad);border:1.5px dashed var(--gm);display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--gl);color:var(--g);font-size:24px;transition:all .15s}
+.ph-add:active{background:var(--gb)}
+input[type=file]{display:none}
+.required-notice{display:none;font-size:12px;color:var(--rm);background:var(--rl);border:1px solid var(--rb);border-radius:8px;padding:8px 12px;margin-bottom:12px}
+.required-notice.show{display:block}
+/* DIFF */
+.diff-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--brd)}
+.diff-row:last-child{border-bottom:none}
+.diff-lbl{flex:1;font-size:13px;color:var(--txt)}
+.diff-btns{display:flex;gap:5px}
+.d-btn{padding:5px 10px;border-radius:6px;font-size:11px;cursor:pointer;border:1px solid;transition:all .15s;user-select:none;font-family:var(--font)}
+.d-btn:active{transform:scale(.95)}
+.d-ok{border-color:var(--gb);background:var(--gl);color:var(--g)}
+.d-ok.sel{background:var(--g);color:white}
+.d-diff{border-color:var(--ab);background:var(--al);color:var(--am)}
+.d-diff.sel{background:var(--am);color:white}
+.d-na{border-color:var(--brd2);background:var(--bg3);color:var(--txt3)}
+.d-na.sel{background:var(--txt2);color:white}
+/* SUMMARY */
+.summary-row{display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--brd);font-size:13px;gap:12px}
+.summary-row:last-child{border-bottom:none}
+.sk{color:var(--txt3);flex-shrink:0}
+.sv{font-weight:500;color:var(--txt);text-align:right;word-break:break-word}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;margin:2px}
+.tag-ok{background:var(--gl);color:var(--g)}
+.tag-diff{background:var(--al);color:var(--am)}
+.tag-na{background:var(--bg3);color:var(--txt3)}
+/* NAV */
+.nav-bar{position:sticky;bottom:0;background:var(--bg);border-top:1px solid var(--brd);padding:12px 16px;display:flex;gap:10px;justify-content:space-between}
+.btn-back{flex:1;padding:12px;font-size:14px;font-weight:500;border-radius:var(--rad);border:1px solid var(--brd2);background:var(--bg3);color:var(--txt2);cursor:pointer;font-family:var(--font)}
+.btn-next{flex:2;padding:12px;font-size:14px;font-weight:500;border-radius:var(--rad);border:none;background:var(--g);color:white;cursor:pointer;font-family:var(--font)}
+.btn-back:active,.btn-next:active{transform:scale(.98)}
+/* EXPORT */
+.export-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.btn-export{padding:12px;font-size:13px;font-weight:500;border-radius:var(--rad);border:none;cursor:pointer;font-family:var(--font)}
+.btn-json{background:var(--bm);color:white}
+.btn-od{background:var(--am);color:white}
+.btn-export:active{transform:scale(.97)}
+.btn-onedrive{width:100%;margin-top:10px;padding:14px;font-size:14px;font-weight:500;border-radius:var(--rad);border:none;cursor:pointer;font-family:var(--font);background:#0F6E56;color:white;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-onedrive:active{transform:scale(.98)}
+.btn-onedrive:disabled{background:var(--bg3);color:var(--txt3);cursor:not-allowed;transform:none}
+.btn-onedrive svg{width:18px;height:18px;flex-shrink:0}
+.od-status{margin-top:8px;padding:10px 12px;border-radius:var(--rad);font-size:13px;line-height:1.5;display:none}
+.od-status.show{display:block}
+.od-status.loading{background:var(--bl);color:#0C447C;border:1px solid #B5D4F4}
+.od-status.success{background:var(--gl);color:#085041;border:1px solid var(--gb)}
+.od-status.error{background:var(--rl);color:var(--rm);border:1px solid var(--rb)}
+.od-panel{margin-top:12px;display:none}
+.od-path{font-family:var(--mono);font-size:12px;padding:10px 12px;background:var(--bl);color:#0C447C;border-radius:var(--rad);border:1px solid #B5D4F4;margin-bottom:10px;word-break:break-all;line-height:1.5}
+.hint{font-size:12px;color:var(--txt2);line-height:1.6;margin-bottom:10px}
+.od-user{display:none;align-items:center;gap:8px;padding:8px 12px;background:var(--gl);border-radius:var(--rad);border:1px solid var(--gb);margin-top:8px;font-size:12px;color:#085041}
+.od-user.show{display:flex}
+.od-user-dot{width:8px;height:8px;border-radius:50%;background:#0F6E56;flex-shrink:0}
+.od-logout{margin-left:auto;background:none;border:none;color:var(--g);font-size:11px;cursor:pointer;font-family:var(--font);text-decoration:underline}
+/* OFFLINE BANNER */
+.offline-banner{display:none;background:var(--al);color:var(--am);font-size:12px;padding:7px 16px;text-align:center;border-bottom:1px solid var(--ab)}
+.offline-banner.show{display:block}
+/* INSTALL PROMPT */
+.install-bar{display:none;background:var(--g);color:white;padding:10px 16px;align-items:center;justify-content:space-between;gap:10px}
+.install-bar.show{display:flex}
+.install-bar span{font-size:13px;line-height:1.4}
+.btn-install{padding:7px 14px;font-size:12px;font-weight:500;border-radius:20px;border:1.5px solid white;background:transparent;color:white;cursor:pointer;font-family:var(--font);white-space:nowrap}
+.btn-dismiss{background:none;border:none;color:rgba(255,255,255,.7);font-size:18px;cursor:pointer;padding:0 4px;line-height:1}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+<!-- OFFLINE BANNER -->
+<div class="offline-banner" id="offline-banner">Mode hors ligne — données sauvegardées localement</div>
+
+<!-- INSTALL PROMPT -->
+<div class="install-bar" id="install-bar">
+  <span>Installer CertPEB sur votre téléphone pour un accès rapide</span>
+  <button class="btn-install" id="btn-install">Installer</button>
+  <button class="btn-dismiss" onclick="dismissInstall()">×</button>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 20 20"><path d="M10 2L2 6v8l8 4 8-4V6L10 2zm0 2.4L16 7.6v6.8L10 17.4 4 14.4V7.6L10 4.4z"/><circle cx="10" cy="10" r="2.2"/></svg>
+    </div>
+    <div>
+      <div class="logo-text">CertPEB</div>
+      <div class="logo-sub">Visite terrain</div>
+    </div>
+  </div>
+  <span class="lot-badge" id="lot-badge">Nouveau dossier</span>
+</div>
+
+<div class="progress-wrap"><div class="progress-fill" id="prog" style="width:25%"></div></div>
+
+<!-- STEP TABS -->
+<div class="steps">
+  <div class="step active" id="tab0" onclick="goTo(0)"><span class="step-num">1</span>Identif.</div>
+  <div class="step" id="tab1" onclick="goTo(1)"><span class="step-num">2</span>Énergie</div>
+  <div class="step" id="tab2" onclick="goTo(2)"><span class="step-num">3</span>Photos</div>
+  <div class="step" id="tab3" onclick="goTo(3)"><span class="step-num">4</span>Différences</div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+<!-- SECTION 1 : IDENTIFICATION -->
+<div class="section active" id="s0">
+  <div class="card">
+    <div class="card-title">Dossier</div>
+    <div class="field">
+      <label>Marché (client)</label>
+      <select id="marche" onchange="saveDraft()">
+        <option value="">— Sélectionner —</option>
+        <option value="Confort Mosan SRL">Confort Mosan SRL</option>
+      </select>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Mois</label>
+        <select id="mois" onchange="saveDraft()">
+          <option value="">— Mois —</option>
+          <option value="MOIS 1">Mois 1</option>
+          <option value="MOIS 2">Mois 2</option>
+          <option value="MOIS 3">Mois 3</option>
+          <option value="MOIS 4">Mois 4</option>
+          <option value="MOIS 5">Mois 5</option>
+          <option value="MOIS 6">Mois 6</option>
+          <option value="MOIS 7">Mois 7</option>
+          <option value="MOIS 8">Mois 8</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>LOT</label>
+        <select id="lot" onchange="updateBadge()" >
+          <option value="">— LOT —</option>
+          <option value="LOT 1">LOT 1</option>
+          <option value="LOT 2">LOT 2</option>
+          <option value="LOT 3">LOT 3</option>
+          <option value="LOT 4">LOT 4</option>
+          <option value="LOT 5">LOT 5</option>
+        </select>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Type de bien</label>
+        <select id="type-bien" onchange="toggleBoite();saveDraft()">
+          <option value="">— Sélectionner —</option>
+          <option value="Maison">Maison</option>
+          <option value="Studio">Studio</option>
+          <option value="1CH">Appartement 1CH</option>
+          <option value="2CH">Appartement 2CH</option>
+          <option value="3CH">Appartement 3CH</option>
+          <option value="4CH">Appartement 4CH+</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Date de visite <span class="auto-badge">auto</span></label>
+        <input type="date" id="dv" class="date-lock" readonly>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Adresse du bien</div>
+    <div class="field">
+      <label>Rue et numéro</label>
+      <div class="geo-wrap">
+        <input type="text" id="rue" placeholder="ex: Avenue Louise 45" oninput="updateBadge()" autocomplete="street-address">
+        <button class="geo-btn" id="geo-btn" onclick="geolocate()">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+            <circle cx="8" cy="7" r="2.8"/><path d="M8 1v1.5M8 11.5V13M1 7h1.5M11.5 7H13"/><path d="M8 10.5v4"/>
+          </svg>
+          <span id="geo-txt">GPS</span>
+        </button>
+      </div>
+      <div class="geo-status" id="geo-status"></div>
+    </div>
+    <div class="row3">
+      <div class="field">
+        <label>N° appt.</label>
+        <input type="text" id="appt" placeholder="3B" autocomplete="off">
+      </div>
+      <div class="field" id="boite-field" style="display:none">
+        <label>N° boîte</label>
+        <input type="text" id="boite" placeholder="ex: 5" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Étage</label>
+        <select id="etage">
+          <option value="">—</option>
+          <option>RDC</option><option>1er</option><option>2e</option>
+          <option>3e</option><option>4e</option><option>5e</option><option>6e+</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>CP</label>
+        <input type="text" id="cp" placeholder="1000" inputmode="numeric">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2 : ÉNERGIE -->
+<div class="section" id="s1">
+  <div class="card">
+    <div class="card-title">Chauffage</div>
+    <div class="field">
+      <label>Type de générateur</label>
+      <div class="radio-group" id="gen">
+        <div class="radio-btn sel" onclick="selR(this,'gen')">Chaudière gaz</div>
+        <div class="radio-btn" onclick="selR(this,'gen')">Chaudière mazout</div>
+        <div class="radio-btn" onclick="selR(this,'gen')">Pompe à chaleur</div>
+        <div class="radio-btn" onclick="selR(this,'gen')">Électrique</div>
+        <div class="radio-btn" onclick="selR(this,'gen')">District</div>
+        <div class="radio-btn" onclick="selR(this,'gen')">Biomasse</div>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Année</label>
+        <input type="number" id="an-gen" placeholder="ex: 2005" inputmode="numeric" min="1950" max="2025">
+      </div>
+      <div class="field">
+        <label>Puissance (kW)</label>
+        <input type="number" id="pui" placeholder="ex: 24" inputmode="decimal">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Eau chaude sanitaire (ECS)</div>
+    <div class="field">
+      <label>Type de production</label>
+      <div class="radio-group" id="ecs">
+        <div class="radio-btn sel" onclick="selR(this,'ecs')">Combinée chauffage</div>
+        <div class="radio-btn" onclick="selR(this,'ecs')">Boiler électrique</div>
+        <div class="radio-btn" onclick="selR(this,'ecs')">Chauffe-eau gaz</div>
+        <div class="radio-btn" onclick="selR(this,'ecs')">Thermodynamique</div>
+        <div class="radio-btn" onclick="selR(this,'ecs')">Solaire</div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Volume du boiler (L) — facultatif</label>
+      <input type="number" id="vol-ecs" placeholder="ex: 150" inputmode="numeric">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Ventilation</div>
+    <div class="field">
+      <div class="radio-group" id="vent">
+        <div class="radio-btn sel" onclick="selR(this,'vent')">Naturelle</div>
+        <div class="radio-btn" onclick="selR(this,'vent')">Système A</div>
+        <div class="radio-btn" onclick="selR(this,'vent')">Système B</div>
+        <div class="radio-btn" onclick="selR(this,'vent')">Système C</div>
+        <div class="radio-btn" onclick="selR(this,'vent')">Système D</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Panneaux photovoltaïques</div>
+    <div class="field">
+      <div class="radio-group" id="pv">
+        <div class="radio-btn sel" onclick="selR(this,'pv')">Non</div>
+        <div class="radio-btn" onclick="selR(this,'pv')">Oui — individuel</div>
+        <div class="radio-btn" onclick="selR(this,'pv')">Oui — collectif</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3 : PHOTOS -->
+<div class="section" id="s2">
+  <div class="required-notice" id="req-notice">
+    Photos obligatoires manquantes — veuillez photographier la façade et la chaudière / le boiler avant de continuer.
+  </div>
+
+  <div class="card urgent">
+    <div class="card-title">Avant de sonner — obligatoire</div>
+    <div class="ph-section" id="phsec-facade"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Équipements techniques</div>
+    <div id="ph-tech-zones"></div>
+  </div>
+</div>
+
+<!-- SECTION 4 : DIFFÉRENCES -->
+<div class="section" id="s3">
+  <div class="card">
+    <div class="card-title">Comparaison vs master — identique par défaut</div>
+    <div id="diff-list"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Notes libres — facultatif</div>
+    <div class="field">
+      <textarea id="notes" placeholder="Observations, anomalies, remarques pour l'encodage PACE..."></textarea>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Récapitulatif du dossier</div>
+    <div id="recap"></div>
+  </div>
+  <div class="export-grid">
+    <button class="btn-export btn-json" onclick="exportJSON()">Exporter JSON</button>
+    <button class="btn-export btn-od" onclick="toggleOD()">Chemin OneDrive</button>
+  </div>
+  <!-- Bouton envoi OneDrive -->
+  <div class="od-user" id="od-user">
+    <div class="od-user-dot"></div>
+    <span id="od-user-name">Connecté</span>
+    <button class="od-logout" onclick="odLogout()">Déconnecter</button>
+  </div>
+  <button class="btn-onedrive" id="btn-onedrive" onclick="sendToOneDrive()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+      <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+      <path d="M12 13v6M9 16l3-3 3 3"/>
+    </svg>
+    Envoyer vers OneDrive
+  </button>
+  <div class="od-status" id="od-status"></div>
+  <div class="od-panel" id="od-panel">
+    <div class="card">
+      <div class="card-title">Chemin OneDrive cible</div>
+      <div class="od-path" id="od-path-txt"></div>
+      <div class="hint">Ce chemin sera créé automatiquement lors de l'envoi.</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+<!-- NAV BAR -->
+<div class="nav-bar" id="nav-bar">
+  <button class="btn-back" id="btn-back" onclick="goBack()" style="display:none">← Retour</button>
+  <button class="btn-next" id="btn-next" onclick="goNext()">Suivant →</button>
+</div>
+
+</div><!-- /app -->
+
+<script>
+const DIFF_ITEMS=['Type de générateur','Année générateur','Puissance','Type ECS','Volume boiler','Système ventilation','Panneaux PV'];
+const PHOTO_ZONES=[
+  {id:'chaudiere',label:'Chaudière / générateur',multi:false,required:true},
+  {id:'vent-ph',label:'Ventilation',multi:true,required:false},
+  {id:'thermo',label:'Thermostat',multi:true,required:false},
+  {id:'vannes',label:'Vannes / robinets TRV',multi:true,required:false},
+  {id:'boiler',label:'Boiler ECS',multi:false,required:false},
+  {id:'divers',label:'Photos diverses',multi:true,required:false}
+];
+
+const diffState={};
+const photoStore={};
+let currentStep=0;
+let deferredInstallPrompt=null;
+
+function init(){
+  const today=new Date();
+  const y=today.getFullYear();
+  const m=String(today.getMonth()+1).padStart(2,'0');
+  const d=String(today.getDate()).padStart(2,'0');
+  document.getElementById('dv').value=`${y}-${m}-${d}`;
+
+  DIFF_ITEMS.forEach(item=>{
+    diffState[item]='ok';
+    const row=document.createElement('div');
+    row.className='diff-row';
+    row.innerHTML=`<div class="diff-lbl">${item}</div><div class="diff-btns">
+      <div class="d-btn d-ok sel" onclick="setDiff('${item}','ok',this)">Identique</div>
+      <div class="d-btn d-diff" onclick="setDiff('${item}','diff',this)">Différent</div>
+      <div class="d-btn d-na" onclick="setDiff('${item}','na',this)">N/A</div>
+    </div>`;
+    document.getElementById('diff-list').appendChild(row);
+  });
+
+  buildPhotoFacade();
+  buildPhotoTech();
+  loadDraft();
+
+  window.addEventListener('offline',()=>document.getElementById('offline-banner').classList.add('show'));
+  window.addEventListener('online',()=>document.getElementById('offline-banner').classList.remove('show'));
+  if(!navigator.onLine) document.getElementById('offline-banner').classList.add('show');
+}
+
+/* INSTALL PROMPT */
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();
+  deferredInstallPrompt=e;
+  document.getElementById('install-bar').classList.add('show');
+});
+document.getElementById('btn-install').addEventListener('click',()=>{
+  if(deferredInstallPrompt){
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then(()=>{
+      deferredInstallPrompt=null;
+      document.getElementById('install-bar').classList.remove('show');
+    });
+  }
+});
+function dismissInstall(){document.getElementById('install-bar').classList.remove('show');}
+
+/* GEOLOCATION */
+function geolocate(){
+  const btn=document.getElementById('geo-btn');
+  const txt=document.getElementById('geo-txt');
+  if(!navigator.geolocation){showGeoStatus('GPS non disponible','err');return;}
+  btn.className='geo-btn loading';txt.textContent='...';
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const {latitude:lat,longitude:lon}=pos.coords;
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1&accept-language=fr`)
+      .then(r=>r.json()).then(data=>{
+        const a=data.address||{};
+        const road=a.road||a.pedestrian||a.footway||a.street||'';
+        const num=a.house_number||'';
+        const postcode=a.postcode||'';
+        if(road){
+          document.getElementById('rue').value=(num?num+' ':'')+road;
+          if(postcode)document.getElementById('cp').value=postcode;
+          updateBadge();
+          btn.className='geo-btn success';txt.textContent='GPS';
+          showGeoStatus('Adresse détectée : '+(num?num+' ':'')+road,'ok');
+        } else {
+          btn.className='geo-btn error';txt.textContent='GPS';
+          showGeoStatus('Adresse introuvable — saisissez manuellement','warn');
+        }
+      }).catch(()=>{btn.className='geo-btn error';txt.textContent='GPS';showGeoStatus('Erreur réseau — saisie manuelle','warn');});
+  },err=>{
+    btn.className='geo-btn error';txt.textContent='GPS';
+    const msgs={1:'Permission GPS refusée',2:'Position indisponible',3:'Délai dépassé'};
+    showGeoStatus(msgs[err.code]||'Erreur GPS','err');
+  },{enableHighAccuracy:true,timeout:10000,maximumAge:0});
+}
+function showGeoStatus(msg,type){const el=document.getElementById('geo-status');el.textContent=msg;el.className='geo-status show '+type;}
+
+/* PHOTOS */
+function buildPhotoFacade(){
+  photoStore['facade']=[];
+  const zone=document.getElementById('phsec-facade');
+  const lr=document.createElement('div');lr.className='ph-label-row';
+  lr.innerHTML=`<span class="ph-label-txt">Façade principale<span class="req-star">*</span></span><span class="ph-count" id="cnt-facade">0 photo</span>`;
+  zone.appendChild(lr);
+  const grid=document.createElement('div');grid.className='ph-grid';grid.id='grid-facade';
+  zone.appendChild(grid);
+  addPhotoSlot('facade',grid,false,true);
+}
+
+function buildPhotoTech(){
+  const container=document.getElementById('ph-tech-zones');
+  PHOTO_ZONES.forEach((z,idx)=>{
+    photoStore[z.id]=[];
+    const sec=document.createElement('div');sec.className='ph-section';
+    const lr=document.createElement('div');lr.className='ph-label-row';
+    lr.innerHTML=`<span class="ph-label-txt">${z.label}${z.required?'<span class="req-star">*</span>':''}</span><span class="ph-count" id="cnt-${z.id}">0 photo</span>`;
+    sec.appendChild(lr);
+    const grid=document.createElement('div');grid.className='ph-grid';grid.id='grid-'+z.id;
+    sec.appendChild(grid);
+    addPhotoSlot(z.id,grid,z.multi,z.required);
+    container.appendChild(sec);
+    if(idx<PHOTO_ZONES.length-1){const sep=document.createElement('div');sep.style='border-top:1px solid var(--brd);margin:10px 0';container.appendChild(sep);}
+  });
+}
+
+function addPhotoSlot(zoneId,grid,multi,isReq){
+  const fileId='f_'+zoneId+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,5);
+  const slot=document.createElement('div');
+  const isEmpty=!photoStore[zoneId]||photoStore[zoneId].length===0;
+  slot.className='ph-slot'+(isReq&&isEmpty?' required-empty':'');
+  slot.id='slot_'+fileId;
+  slot.innerHTML=`<svg class="ph-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M9 6l1.5-2h3L15 6"/></svg><div class="ph-txt">Photo</div><div class="ph-del" onclick="delPhoto('${zoneId}','${fileId}',event)">×</div>`;
+  const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.capture='environment';inp.id=fileId;
+  inp.onchange=e=>handlePhoto(zoneId,fileId,e,multi,grid,isReq);
+  slot.onclick=()=>inp.click();
+  slot.appendChild(inp);
+  grid.appendChild(slot);
+}
+
+function handlePhoto(zoneId,fileId,e,multi,grid,isReq){
+  const f=e.target.files[0];if(!f)return;
+  const slot=document.getElementById('slot_'+fileId);
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    let img=slot.querySelector('img');
+    if(!img){img=document.createElement('img');slot.appendChild(img);}
+    img.src=ev.target.result;
+    slot.classList.add('has-img');
+    slot.classList.remove('required-empty');
+    photoStore[zoneId].push({id:fileId,name:f.name,dataUrl:ev.target.result});
+    updatePhotoCount(zoneId);
+    saveDraft();
+    if(multi){
+      const addBtn=grid.querySelector('.ph-add');if(addBtn)addBtn.remove();
+      const na=document.createElement('div');na.className='ph-add';na.innerHTML='+';
+      na.onclick=()=>addPhotoSlot(zoneId,grid,true,false);
+      grid.appendChild(na);
+    }
+  };
+  reader.readAsDataURL(f);
+}
+
+function delPhoto(zoneId,fileId,e){
+  e.stopPropagation();
+  const slot=document.getElementById('slot_'+fileId);if(slot)slot.remove();
+  photoStore[zoneId]=(photoStore[zoneId]||[]).filter(p=>p.id!==fileId);
+  updatePhotoCount(zoneId);
+  saveDraft();
+  const grid=document.getElementById('grid-'+zoneId)||document.getElementById('grid-facade');
+  const zone=PHOTO_ZONES.find(z=>z.id===zoneId);
+  const isMulti=zone?zone.multi:false;
+  const isReq=zone?zone.required:(zoneId==='facade');
+  if(grid&&!grid.querySelector('.ph-slot:not(.has-img)')){
+    addPhotoSlot(zoneId,grid,isMulti,isReq&&photoStore[zoneId].length===0);
+  }
+}
+
+function updatePhotoCount(zoneId){
+  const cnt=(photoStore[zoneId]||[]).length;
+  const el=document.getElementById('cnt-'+zoneId);
+  if(el)el.textContent=cnt+' photo'+(cnt>1?'s':'');
+}
+
+/* REQUIRED PHOTOS CHECK */
+function checkRequiredPhotos(){
+  const facadeOk=(photoStore['facade']||[]).length>0;
+  const chaudiereOk=(photoStore['chaudiere']||[]).length>0||
+                    (photoStore['boiler']||[]).length>0;
+  return {ok:facadeOk&&chaudiereOk,facade:facadeOk,chaudiere:chaudiereOk};
+}
+
+function markRequiredEmpty(){
+  ['facade','chaudiere'].forEach(zoneId=>{
+    if((photoStore[zoneId]||[]).length===0){
+      const grid=document.getElementById('grid-'+zoneId)||document.getElementById('grid-facade');
+      if(grid){const s=grid.querySelector('.ph-slot:not(.has-img)');if(s)s.classList.add('required-empty');}
+    }
+  });
+}
+
+/* RADIO */
+function selR(el,grp){
+  document.querySelectorAll('#'+grp+' .radio-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+  saveDraft();
+}
+function setDiff(item,state,btn){
+  diffState[item]=state;
+  btn.closest('.diff-row').querySelectorAll('.d-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+function updateBadge(){
+  const lot=document.getElementById('lot').value;
+  const rue=document.getElementById('rue').value;
+  let txt=lot||'Nouveau dossier';
+  if(rue)txt=(lot?lot+' — ':'')+rue.slice(0,22);
+  document.getElementById('lot-badge').textContent=txt;
+  saveDraft();
+}
+
+/* NAVIGATION */
+function goTo(n){
+  if(n===3&&currentStep===2){
+    const chk=checkRequiredPhotos();
+    if(!chk.ok){
+      document.getElementById('req-notice').classList.add('show');
+      markRequiredEmpty();
+      document.getElementById('s2').scrollIntoView({behavior:'smooth',block:'start'});
+      return;
+    }
+  }
+  document.getElementById('req-notice').classList.remove('show');
+  document.querySelectorAll('.section').forEach((s,i)=>s.classList.toggle('active',i===n));
+  document.querySelectorAll('.step').forEach((s,i)=>{s.classList.toggle('active',i===n);s.classList.toggle('done',i<n);});
+  document.getElementById('prog').style.width=((n+1)/4*100)+'%';
+  document.getElementById('btn-back').style.display=n===0?'none':'';
+  document.getElementById('btn-next').textContent=n===3?'':'Suivant →';
+  document.getElementById('btn-next').style.display=n===3?'none':'';
+  document.getElementById('tab'+n).scrollIntoView({behavior:'smooth',inline:'nearest',block:'nearest'});
+  document.querySelector('.content').scrollTo({top:0,behavior:'smooth'});
+  currentStep=n;
+  if(n===3)buildRecap();
+}
+function goToForce(n){
+  document.getElementById('req-notice').classList.remove('show');
+  document.querySelectorAll('.section').forEach((s,i)=>s.classList.toggle('active',i===n));
+  document.querySelectorAll('.step').forEach((s,i)=>{s.classList.toggle('active',i===n);s.classList.toggle('done',i<n);});
+  document.getElementById('prog').style.width=((n+1)/4*100)+'%';
+  document.getElementById('btn-back').style.display=n===0?'none':'';
+  document.getElementById('btn-next').textContent=n===3?'':'Suivant →';
+  document.getElementById('btn-next').style.display=n===3?'none':'';
+  currentStep=n;
+  if(n===3)buildRecap();
+}
+function goNext(){if(currentStep<3)goTo(currentStep+1);}
+function goBack(){if(currentStep>0)goTo(currentStep-1);}
+
+/* HELPERS */
+function gv(id){const e=document.getElementById(id);return e?e.value:'';}
+function gr(grp){const s=document.querySelector('#'+grp+' .radio-btn.sel');return s?s.textContent:'';}
+
+function getNomDossier(){
+  const rue=gv('rue')||'adresse';
+  const appt=gv('appt').trim();
+  const boite=gv('boite').trim();
+  const typeBien=gv('type-bien');
+  if(!appt||typeBien==='Maison') return rue;
+  if(boite) return `${rue} - Apt ${appt} bte ${boite}`;
+  return `${rue} - Apt ${appt}`;
+}
+function getODPath(){
+  const marche=gv('marche')||'Marché';
+  const mois=gv('mois')||'MOIS ?';
+  const lot=gv('lot')||'LOT ?';
+  return `OneDrive/PRO/- CERTIFICAT PEB/Appel d'offre/${marche}/${mois}/${lot}/${getNomDossier()}`;
+}
+function toggleBoite(){
+  const t=gv('type-bien');
+  const isMaison=t==='Maison';
+  const apptField=document.getElementById('appt').closest('.field');
+  const boiteField=document.getElementById('boite-field');
+  // masquer appt et boîte si maison
+  apptField.style.display=isMaison?'none':'';
+  boiteField.style.display=(!isMaison&&gv('appt'))||!isMaison?'':'none';
+  if(isMaison){document.getElementById('appt').value='';document.getElementById('boite').value='';}
+  boiteField.style.display=isMaison?'none':'';
+}
+
+function buildRecap(){
+  const diffs=Object.entries(diffState).filter(([,v])=>v==='diff').map(([k])=>k);
+  const nas=Object.entries(diffState).filter(([,v])=>v==='na').map(([k])=>k);
+  const totalPh=Object.values(photoStore).reduce((a,v)=>a+v.length,0);
+  document.getElementById('recap').innerHTML=`
+    <div class="summary-row"><span class="sk">Marché</span><span class="sv">${gv('marche')||'—'}</span></div>
+    <div class="summary-row"><span class="sk">Mois / LOT</span><span class="sv">${gv('mois')||'—'} / ${gv('lot')||'—'}</span></div>
+    <div class="summary-row"><span class="sk">Dossier</span><span class="sv">${getNomDossier()}</span></div>
+    <div class="summary-row"><span class="sk">Type / Étage</span><span class="sv">${gv('type-bien')||'—'} / ${gv('etage')||'—'}</span></div>
+    <div class="summary-row"><span class="sk">Date visite</span><span class="sv">${gv('dv')||'—'}</span></div>
+    <div class="summary-row"><span class="sk">Générateur</span><span class="sv">${gr('gen')||'—'}${gv('an-gen')?' ('+gv('an-gen')+')':''} ${gv('pui')?'— '+gv('pui')+' kW':''}</span></div>
+    <div class="summary-row"><span class="sk">ECS</span><span class="sv">${gr('ecs')||'—'}${gv('vol-ecs')?' — '+gv('vol-ecs')+' L':''}</span></div>
+    <div class="summary-row"><span class="sk">Ventilation / PV</span><span class="sv">${gr('vent')||'—'} / ${gr('pv')||'—'}</span></div>
+    <div class="summary-row"><span class="sk">Photos</span><span class="sv">${totalPh} photo${totalPh>1?'s':''}</span></div>
+    <div class="summary-row"><span class="sk">Différences</span><span class="sv">${diffs.length===0?'<span class="tag tag-ok">Aucune</span>':diffs.map(d=>`<span class="tag tag-diff">${d}</span>`).join('')}</span></div>
+    ${nas.length>0?`<div class="summary-row"><span class="sk">N/A</span><span class="sv">${nas.map(d=>`<span class="tag tag-na">${d}</span>`).join('')}</span></div>`:''}
+  `;
+}
+
+/* DRAFT AUTOSAVE */
+function saveDraft(){
+  try{
+    const d={marche:gv('marche'),mois:gv('mois'),lot:gv('lot'),typeBien:gv('type-bien'),
+      rue:gv('rue'),appt:gv('appt'),boite:gv('boite'),etage:gv('etage'),cp:gv('cp'),
+      gen:gr('gen'),anGen:gv('an-gen'),pui:gv('pui'),ecs:gr('ecs'),volEcs:gv('vol-ecs'),
+      vent:gr('vent'),pv:gr('pv'),notes:gv('notes'),diff:diffState};
+    localStorage.setItem('certpeb_draft',JSON.stringify(d));
+  }catch(e){}
+}
+function loadDraft(){
+  try{
+    const raw=localStorage.getItem('certpeb_draft');if(!raw)return;
+    const d=JSON.parse(raw);
+    const setVal=(id,val)=>{const e=document.getElementById(id);if(e&&val)e.value=val;};
+    setVal('marche',d.marche);setVal('mois',d.mois);setVal('lot',d.lot);
+    setVal('type-bien',d.typeBien);setVal('rue',d.rue);setVal('appt',d.appt);
+    setVal('boite',d.boite);setVal('etage',d.etage);setVal('cp',d.cp);
+    setVal('an-gen',d.anGen);setVal('pui',d.pui);setVal('vol-ecs',d.volEcs);
+    setVal('notes',d.notes);
+    ['gen','ecs','vent','pv'].forEach(grp=>{
+      const val=d[grp];
+      if(val){const btn=Array.from(document.querySelectorAll('#'+grp+' .radio-btn')).find(b=>b.textContent===val);
+        if(btn){document.querySelectorAll('#'+grp+' .radio-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');}}
+    });
+    if(d.diff)Object.entries(d.diff).forEach(([item,state])=>{
+      diffState[item]=state;
+      const row=Array.from(document.querySelectorAll('.diff-row')).find(r=>r.querySelector('.diff-lbl')?.textContent===item);
+      if(row){row.querySelectorAll('.d-btn').forEach(b=>b.classList.remove('sel'));
+        const map={'ok':'.d-ok','diff':'.d-diff','na':'.d-na'};
+        const btn=row.querySelector(map[state]);if(btn)btn.classList.add('sel');}
+    });
+    toggleBoite();
+    updateBadge();
+  }catch(e){}
+}
+
+/* EXPORT */
+function exportJSON(){
+  const photoMeta=Object.fromEntries(Object.entries(photoStore).map(([k,v])=>[k,v.length]));
+  const nomDossier=getNomDossier();
+  const data={
+    dossier:{
+      marche:gv('marche'),
+      mois:gv('mois'),
+      lot:gv('lot'),
+      typeAppt:gv('type-bien'),
+      dateVisite:gv('dv')
+    },
+    adresse:{
+      rue:gv('rue'),
+      appt:gv('appt'),
+      boite:gv('boite'),
+      etage:gv('etage'),
+      cp:gv('cp'),
+      nomDossier:nomDossier
+    },
+    energie:{generateur:gr('gen'),anneeGenerateur:gv('an-gen'),puissance:gv('pui'),ecs:gr('ecs'),volumeBoiler:gv('vol-ecs'),ventilation:gr('vent'),pv:gr('pv')},
+    photos:photoMeta,
+    differences:diffState,
+    notes:gv('notes'),
+    onedrivePath:getODPath(),
+    exportedAt:new Date().toISOString()
+  };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`PEB_${nomDossier.replace(/[\s\/]/g,'_')}_${gv('dv')||'date'}.json`;
+  a.click();
+  localStorage.removeItem('certpeb_draft');
+}
+function toggleOD(){
+  const p=document.getElementById('od-panel');
+  const show=p.style.display==='none'||p.style.display==='';
+  p.style.display=show?'block':'none';
+  if(show)document.getElementById('od-path-txt').textContent=getODPath();
+}
+
+/* ── MICROSOFT GRAPH / ONEDRIVE ─────────────────────────── */
+const OD_CLIENT_ID  = '8b423c79-eaea-4287-bedc-2faeac8e623d';
+const OD_REDIRECT   = 'https://maxigerard-sudo.github.io/appliPEB2';
+const OD_SCOPES     = 'Files.ReadWrite.All offline_access User.Read';
+const OD_AUTH_URL   = 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize';
+const OD_TOKEN_URL  = 'https://login.microsoftonline.com/common/oauth2/v2.0/token';
+const GRAPH_BASE    = 'https://graph.microsoft.com/v1.0';
+
+let odToken = null;
+
+function odShowStatus(msg, type){
+  const el=document.getElementById('od-status');
+  el.textContent=msg; el.className='od-status show '+type;
+}
+function odHideStatus(){document.getElementById('od-status').className='od-status';}
+
+/* --- PKCE helpers --- */
+async function pkceChallenge(){
+  const arr=new Uint8Array(32); crypto.getRandomValues(arr);
+  const verifier=btoa(String.fromCharCode(...arr)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(verifier));
+  const challenge=btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+  return {verifier,challenge};
+}
+
+/* --- Login via redirect (compatible mobile Safari) --- */
+async function odLogin(){
+  const {verifier,challenge}=await pkceChallenge();
+  const state=Math.random().toString(36).slice(2);
+  sessionStorage.setItem('od_pkce',verifier);
+  sessionStorage.setItem('od_state',state);
+  sessionStorage.setItem('od_pending_send','1');
+  saveDraft();
+  const params=new URLSearchParams({
+    client_id:OD_CLIENT_ID, response_type:'code',
+    redirect_uri:OD_REDIRECT, scope:OD_SCOPES,
+    response_mode:'query', state,
+    code_challenge:challenge, code_challenge_method:'S256'
+  });
+  window.location.href=OD_AUTH_URL+'?'+params;
+}
+
+async function odExchangeCode(code){
+  const verifier=sessionStorage.getItem('od_pkce');
+  const body=new URLSearchParams({
+    client_id:OD_CLIENT_ID, grant_type:'authorization_code',
+    code, redirect_uri:OD_REDIRECT, code_verifier:verifier
+  });
+  const r=await fetch(OD_TOKEN_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body});
+  const d=await r.json();
+  if(d.error) throw new Error(d.error_description||d.error);
+  return d;
+}
+
+function odSaveToken(t){
+  odToken={access:t.access_token,refresh:t.refresh_token,expires:Date.now()+(t.expires_in-60)*1000};
+  try{localStorage.setItem('od_token',JSON.stringify(odToken));}catch(e){}
+}
+
+function odLoadToken(){
+  try{
+    const raw=localStorage.getItem('od_token');
+    if(raw){odToken=JSON.parse(raw); if(odToken&&odToken.expires>Date.now()) return true;}
+  }catch(e){}
+  return false;
+}
+
+async function odRefreshToken(){
+  if(!odToken?.refresh) return false;
+  try{
+    const body=new URLSearchParams({client_id:OD_CLIENT_ID,grant_type:'refresh_token',refresh_token:odToken.refresh,scope:OD_SCOPES});
+    const r=await fetch(OD_TOKEN_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body});
+    const d=await r.json();
+    if(d.access_token){odSaveToken(d);return true;}
+  }catch(e){}
+  return false;
+}
+
+async function odEnsureToken(){
+  if(odToken&&odToken.expires>Date.now()) return true;
+  if(await odRefreshToken()) return true;
+  return false;
+}
+
+function odLogout(){
+  odToken=null;
+  try{localStorage.removeItem('od_token');}catch(e){}
+  document.getElementById('od-user').classList.remove('show');
+  document.getElementById('btn-onedrive').textContent='';
+  document.getElementById('btn-onedrive').innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/><path d="M12 13v6M9 16l3-3 3 3"/></svg>Envoyer vers OneDrive`;
+  odHideStatus();
+}
+
+async function odGetUser(){
+  const r=await fetch(GRAPH_BASE+'/me',{headers:{Authorization:'Bearer '+odToken.access}});
+  return r.ok?await r.json():null;
+}
+
+/* --- Créer dossier récursivement (méthode robuste) --- */
+async function odEnsureFolder(path){
+  const headers={Authorization:'Bearer '+odToken.access,'Content-Type':'application/json'};
+  const parts=path.split('/').filter(Boolean);
+  let builtPath='';
+
+  for(const part of parts){
+    builtPath=builtPath?builtPath+'/'+part:part;
+    const encodedPath=builtPath.split('/').map(p=>encodeURIComponent(p)).join('/');
+
+    // Vérifier si le dossier existe déjà
+    const check=await fetch(`${GRAPH_BASE}/me/drive/root:/${encodedPath}`,{headers:{Authorization:'Bearer '+odToken.access}});
+    if(check.ok) continue; // existe déjà → on passe au suivant
+
+    // Créer via le parent
+    const parentEncoded=builtPath.includes('/')
+      ? builtPath.split('/').slice(0,-1).map(p=>encodeURIComponent(p)).join('/')
+      : null;
+    const createUrl=parentEncoded
+      ? `${GRAPH_BASE}/me/drive/root:/${parentEncoded}:/children`
+      : `${GRAPH_BASE}/me/drive/root/children`;
+
+    const create=await fetch(createUrl,{
+      method:'POST',
+      headers,
+      body:JSON.stringify({name:part, folder:{}})
+    });
+
+    if(!create.ok){
+      const err=await create.json();
+      // Si le dossier a été créé entre temps (conflit) → on continue
+      if(err.error?.code==='nameAlreadyExists') continue;
+      throw new Error('Création "'+part+'" : '+(err.error?.message||create.status));
+    }
+  }
+
+  // Retourner l'ID du dossier final
+  const finalEncoded=path.split('/').map(p=>encodeURIComponent(p)).join('/');
+  const finalRes=await fetch(`${GRAPH_BASE}/me/drive/root:/${finalEncoded}`,{headers:{Authorization:'Bearer '+odToken.access}});
+  if(!finalRes.ok) throw new Error('Dossier introuvable après création : '+path);
+  return (await finalRes.json()).id;
+}
+
+/* --- Upload fichier --- */
+async function odUploadFile(parentId, filename, content){
+  const blob=typeof content==='string'?new Blob([content],{type:'application/json'}):content;
+  const r=await fetch(`${GRAPH_BASE}/me/drive/items/${parentId}:/${encodeURIComponent(filename)}:/content`,{
+    method:'PUT',
+    headers:{Authorization:'Bearer '+odToken.access,'Content-Type':'application/octet-stream'},
+    body:blob
+  });
+  if(!r.ok){const e=await r.json();throw new Error(e.error?.message||'Erreur upload');}
+  return await r.json();
+}
+
+/* --- Bouton principal --- */
+async function sendToOneDrive(){
+  const btn=document.getElementById('btn-onedrive');
+  btn.disabled=true;
+
+  try{
+    // 1. Auth — si pas de token valide, on redirige vers Microsoft
+    let tokenOk=await odEnsureToken();
+    if(!tokenOk){
+      // Sauvegarder l'intention d'envoi pour reprendre après le retour
+      sessionStorage.setItem('od_pending_send','1');
+      odShowStatus('Redirection vers Microsoft pour connexion…','loading');
+      await odLogin(); // redirige, la page se recharge après
+      return;
+    }
+
+    await doSendToOneDrive();
+
+  }catch(e){
+    odShowStatus('Erreur : '+e.message,'error');
+  }
+
+  btn.disabled=false;
+}
+
+async function doSendToOneDrive(){
+  const btn=document.getElementById('btn-onedrive');
+  btn.disabled=true;
+  try{
+    // Construire chemin OneDrive
+    const marche=gv('marche')||'Marche';
+    const mois=gv('mois')||'MOIS';
+    const lot=gv('lot')||'LOT';
+    const nomDossier=getNomDossier();
+    const odPath=`PRO/- CERTIFICAT PEB/Appel d'offre/${marche}/${mois}/${lot}/${nomDossier}`;
+
+    odShowStatus('Création de l\'arborescence OneDrive…','loading');
+
+    // Créer dossier + sous-dossier Photos
+    const folderId=await odEnsureFolder(odPath);
+    await odEnsureFolder(odPath+'/Photos');
+
+    // Upload JSON
+    odShowStatus('Envoi de la fiche de visite…','loading');
+    const nomFichier=`PEB_${nomDossier.replace(/[\s\/]/g,'_')}_${gv('dv')||'date'}.json`;
+    const photoMeta=Object.fromEntries(Object.entries(photoStore).map(([k,v])=>[k,v.length]));
+    const jsonData={
+      dossier:{marche:gv('marche'),mois:gv('mois'),lot:gv('lot'),typeAppt:gv('type-bien'),dateVisite:gv('dv')},
+      adresse:{rue:gv('rue'),appt:gv('appt'),boite:gv('boite'),etage:gv('etage'),cp:gv('cp'),nomDossier},
+      energie:{generateur:gr('gen'),anneeGenerateur:gv('an-gen'),puissance:gv('pui'),ecs:gr('ecs'),volumeBoiler:gv('vol-ecs'),ventilation:gr('vent'),pv:gr('pv')},
+      photos:photoMeta, differences:diffState, notes:gv('notes'),
+      onedrivePath:odPath, exportedAt:new Date().toISOString()
+    };
+    await odUploadFile(folderId, nomFichier, JSON.stringify(jsonData,null,2));
+
+    // Succès
+    const diffs=Object.entries(diffState).filter(([,v])=>v==='diff').map(([k])=>k);
+    let msg=`Envoyé avec succès !\n📁 ${odPath}`;
+    if(diffs.length>0) msg+=`\n\nDifférences à encoder : ${diffs.join(', ')}`;
+    odShowStatus(msg,'success');
+    localStorage.removeItem('certpeb_draft');
+
+  }catch(e){
+    odShowStatus('Erreur : '+e.message,'error');
+  }
+  btn.disabled=false;
+}
+
+/* Vérifier token au chargement + gérer retour OAuth */
+window.addEventListener('load',async ()=>{
+  if(odLoadToken()){
+    odGetUser().then(u=>{
+      if(u){
+        document.getElementById('od-user-name').textContent=u.displayName||u.userPrincipalName;
+        document.getElementById('od-user').classList.add('show');
+      }
+    }).catch(()=>{});
+  }
+
+  // Gérer le retour après redirection Microsoft
+  const params=new URLSearchParams(window.location.search);
+  if(params.get('code')){
+    window.history.replaceState({},'',window.location.pathname);
+    try{
+      odShowStatus('Connexion en cours…','loading');
+      const t=await odExchangeCode(params.get('code'));
+      odSaveToken(t);
+      const u=await odGetUser();
+      if(u){
+        document.getElementById('od-user-name').textContent=u.displayName||u.userPrincipalName;
+        document.getElementById('od-user').classList.add('show');
+      }
+      // Aller à l'étape 4 en forçant (sans vérif photos)
+      goToForce(3);
+      if(sessionStorage.getItem('od_pending_send')){
+        sessionStorage.removeItem('od_pending_send');
+        odShowStatus('Connecté — envoi en cours…','loading');
+        setTimeout(()=>doSendToOneDrive(), 800);
+      } else {
+        odShowStatus('Connecté ! Cliquez sur "Envoyer vers OneDrive".','success');
+      }
+    }catch(e){
+      goToForce(3);
+      odShowStatus('Erreur de connexion : '+e.message,'error');
+    }
+  }
+  if(params.get('error')){
+    window.history.replaceState({},'',window.location.pathname);
+    goToForce(3);
+    odShowStatus('Connexion refusée : '+(params.get('error_description')||params.get('error')),'error');
+  }
+});
+
+/* SERVICE WORKER */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+}
+
+document.addEventListener('input',saveDraft);
+init();
+</script>
+</body>
+</html>
